@@ -1,7 +1,12 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from config import settings
 import httpx
 from contextlib import asynccontextmanager
+from schemas import UserCreateSchema
+from database import get_db
+from sqlalchemy.orm import Session
+from user_service import UserService
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -28,21 +33,30 @@ async def send_message(chat_id: int, text: str):
 
 
 @app.post("/webhook")
-async def webhook(req: Request):
+async def webhook(req: Request, db: Session = Depends(get_db)):
     data = await req.json()
-
     message = data.get("message", {})
-    chat_id = message.get("chat", {}).get("id")
-    text = message.get("text")
+    from_info = message.get("from")
 
-    if not chat_id:
+    if not from_info or "text" not in message:
         return {"ok": True}
-    if text == "/start":
-        await send_message(chat_id=chat_id, text="Привет! Я ваш Telegram бот.")
-    else:
-        await send_message(chat_id=chat_id, text=f"Ты написал: {text}")
+
+    user_data = UserCreateSchema(
+        username=from_info.get("username"),
+        telegram_id=from_info.get("id"),
+        first_name=from_info.get("first_name") 
+    )
+
+    user = UserService.create_user(db, user_data)
+
+    if message["text"] == "/start":
+        await send_message(
+            chat_id=user.telegram_id, 
+            text=f"Привет, {user.first_name}! Я бот для изучения английского языка."
+        )
 
     return {"ok": True}
+
 
 
 
