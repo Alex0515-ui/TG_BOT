@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 load_dotenv()
 
+# Для удобного получения секретных данных
 class Settings(BaseSettings):
     BOT_TOKEN: str
     WEB_URL: str

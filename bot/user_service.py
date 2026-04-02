@@ -2,10 +2,10 @@ from sqlalchemy.orm import Session
 from schemas import UserCreateSchema
 from models import User
 
-
 class UserService:
 
-    @staticmethod
+    # Создание пользователя
+    @staticmethod  
     def create_user(db: Session, data: UserCreateSchema):
         user = db.query(User).filter_by(telegram_id=data.telegram_id).first()
 
@@ -23,6 +23,36 @@ class UserService:
         db.commit()
         db.refresh(user)
         return user
+    
+    # Выбор уровня
+    @staticmethod 
+    def select_level(db: Session, tg_id: int, level: str):
+        user = db.query(User).filter_by(telegram_id=tg_id).first()
+        if user:
+            user.level = level
+            db.commit()
+            db.refresh(user)
+
+    # Выбор режима
+    @staticmethod 
+    def select_mode(db: Session, tg_id: int, mode: str):
+        user = db.query(User).filter_by(telegram_id=tg_id).first()
+        if user:
+            user.mode = mode
+            db.commit()
+            db.refresh(user)
+
+    # Регистрация пользователя
+    @staticmethod 
+    def complete_register(db: Session, tg_id: int):
+        user = db.query(User).filter_by(telegram_id=tg_id).first()
+        if user:
+            user.is_registered = True
+            db.commit()
+    
+        
+
+
 
     
     

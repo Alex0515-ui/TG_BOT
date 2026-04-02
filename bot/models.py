@@ -1,8 +1,8 @@
 from database import Base
-from sqlalchemy import Column, Integer,String, Enum as SQLEnum, BigInteger, func, DateTime
+from sqlalchemy import Column, Integer,String, Enum as SQLEnum, BigInteger, func, DateTime, Boolean
 from enum import Enum
 
-
+# Уровни владения англ языком
 class Levels(str, Enum):
     A1 = "Beginner"
     A2 = "Elementary"
@@ -11,12 +11,12 @@ class Levels(str, Enum):
     C1 = "Upper-intermediate"
     C2 = "Advanced"
 
-
+# Режимы англ: Обычный, Технический(Для работы)
 class Mode(str, Enum):
     GENERAL = "general"
     TECH = "tech"
 
-
+# Основная таблица пользователя
 class User(Base):
     __tablename__ = "users"
 
@@ -27,6 +27,7 @@ class User(Base):
     level = Column(SQLEnum(Levels), nullable=True, default=Levels.A1)
     mode = Column(SQLEnum(Mode), nullable=True, default=Mode.GENERAL)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    is_registered = Column(Boolean, default=False)
 
     def __repr__(self):
         return f"User: telegram_id:{self.telegram_id}, level: {self.level}"
