@@ -1,10 +1,10 @@
-from models import Levels, Mode
+from entities.models import Levels, Mode
 
 # Выбор режима
 Mode_keyboard = { 
     "inline_keyboard": [
         [
-            {"text": f"{mode.name}, {mode.value}", "callback_data": f"set_mode_{mode.name}"}
+            {"text": f"{mode.name}", "callback_data": f"set_mode_{mode.name}"}
             for mode in Mode
         ]
         
@@ -20,5 +20,17 @@ Level_keyboard = {
             for level in list(Levels)[i:i+2]
         ]
         for i in range(0, len(Levels), 2)
+    ]
+}
+
+word_counts = [5, 10, 15, 20]
+
+Word_count_keyboard = {
+    "inline_keyboard" : [
+        [
+            {"text": f"{count} слов",
+             "callback_data": f"set_word_count_{count}"}
+            for count in word_counts
+        ]
     ]
 }

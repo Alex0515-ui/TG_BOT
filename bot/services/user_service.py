@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
-from schemas import UserCreateSchema
-from models import User
+from entities.schemas import UserCreateSchema
+from entities.models import User, User_words, Words
+from sqlalchemy import func
 
 class UserService:
 
@@ -28,6 +29,7 @@ class UserService:
     @staticmethod 
     def select_level(db: Session, tg_id: int, level: str):
         user = db.query(User).filter_by(telegram_id=tg_id).first()
+        print("Уровень установлен")
         if user:
             user.level = level
             db.commit()
@@ -37,6 +39,7 @@ class UserService:
     @staticmethod 
     def select_mode(db: Session, tg_id: int, mode: str):
         user = db.query(User).filter_by(telegram_id=tg_id).first()
+        print("Мод установлен")
         if user:
             user.mode = mode
             db.commit()
@@ -50,6 +53,30 @@ class UserService:
             user.is_registered = True
             db.commit()
     
+    @staticmethod
+    def get_daily_words(db: Session, tg_id: int, word_count: int):
+        user = db.query(User).filter_by(telegram_id=tg_id).first()
+        if not user:
+            return None
+        
+        excluded_words = db.query(User_words.word_id).filter(User_words.user_id==user.id).subquery()
+        result = []
+
+        words = db.query(Words).filter(
+            ~Words.id.in_(excluded_words), 
+            Words.level==user.level, Words.type==user.mode
+        ).order_by(func.random()).limit(word_count).all()
+
+        for word in words:
+            result.append({"id": word.id, "word": word.word, "translation": word.translation, "example": word.example})
+
+        return result
+    
+
+    
+
+
+
         
 
 

@@ -1,9 +1,9 @@
 from google import genai
 from google.genai import types
 import json
-from database import SessionLocal
-from models import Words
-from config import settings
+from db.database import SessionLocal
+from entities.models import Words
+from db.config import settings
 from sqlalchemy.orm import Session
 import time
 

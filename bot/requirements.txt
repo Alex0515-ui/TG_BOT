@@ -1,8 +1,12 @@
 fastapi
+uvicorn
 ngrok
 python-dotenv
+pydantic-settings
+httpx
 sqlalchemy
 psycopg2-binary
 pg8000
 alembic
-openai
+redis
+celery
