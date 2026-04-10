@@ -4,6 +4,7 @@ from services.word_service import *
 from sqlalchemy.orm import Session
 from entities.keyboards import *
 from entities.models import User
+from handlers.word_handlers import *
 
 # Обработчик создания пользователя
 async def handle_create_user(user, db: Session):
@@ -43,9 +44,18 @@ async def handle_callback(callback, db: Session):
     elif action.startswith("set_mode_"):
         return await handle_set_mode(callback=callback, db=db)
 
-    elif action.startswith("set_word_count"):
+    elif action.startswith("set_word_count_"):
         return await handle_set_words(callback=callback, db=db)
-
+    
+    elif action.startswith("answer_"):
+        return await handle_answer(callback=callback, db=db) 
+    
+    elif action.startswith("remember_"):
+        return await handle_remember(callback=callback, db=db)
+    
+    elif action.startswith("repeat_"):
+        return await handle_repeat(callback=callback, db=db)
+    
 
 # Обработчик установки уровня пользователя
 async def handle_set_level(callback, db: Session):
@@ -73,19 +83,6 @@ async def handle_set_mode(callback, db: Session):
         "keyboard": Word_count_keyboard
     }
 
-# Обработчик количества слов
-async def handle_set_words(callback, db: Session):
-    tg_id = callback["from"]["id"]
-    word_count = int(callback["data"].replace("set_word_count_", ""))
 
-    words = UserService.get_daily_words(db=db, tg_id=tg_id, word_count=word_count)
-    for word in words:
-        await send_message(
-            chat_id=tg_id,
-            text=f"{word['word']}\n\nПример: {word['example']}"
-        )
-    return {
-        "chat_id": tg_id,
-        "text": f"Отлично, сегодня мы изучим {word_count} слов!"
-    }
+
 

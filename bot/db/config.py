@@ -5,7 +5,7 @@ from redis.asyncio import Redis
 
 load_dotenv()
 
-r = Redis.from_url("redis://redis:6379", decode_responses=True)
+redis_client = Redis.from_url("redis://redis:6379", decode_responses=True)
 
 # Для удобного получения секретных данных
 class Settings(BaseSettings):

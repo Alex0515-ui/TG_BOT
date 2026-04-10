@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from db.database import get_db
 from sqlalchemy.orm import Session
 from entities.keyboards import *
-from handlers import handle_callback, handle_start, handle_create_user
+from handlers.user_handlers import handle_callback, handle_start, handle_create_user
 from telegram import send_message
 import logging
 from db.database import Base, engine

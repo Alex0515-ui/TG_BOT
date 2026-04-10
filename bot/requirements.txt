@@ -10,3 +10,5 @@ pg8000
 alembic
 redis
 celery
+google
+google-genai

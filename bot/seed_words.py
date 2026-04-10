@@ -69,11 +69,11 @@ def fill_database():
 
     for task in tasks:
         try:
-            print(f"Requesting {task["type"]} for level {task.get("level", "B1-C2")}...")
+            print(f"Requesting {task['type']} for level {task.get('level', 'B1-C2')}...")
             data = get_words_from_ai(task["prompt"])
 
             if not data:
-                print(f"Cannot get data for {task["level"]} after all attempts...")
+                print(f"Cannot get data for {task['level']} after all attempts...")
                 continue
 
             words_count = 0

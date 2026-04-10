@@ -4,14 +4,14 @@ from enum import Enum
 
 # Уровни владения англ языком
 class Levels(str, Enum):
-    A1 = "Beginner"
-    A2 = "Elementary"
+    A1 = "A1"
+    A2 = "A2"
 
-    B1 = "Pre-intermediate"
-    B2 = "Intermediate"
+    B1 = "B1"
+    B2 = "B2"
     
-    C1 = "Upper-intermediate"
-    C2 = "Advanced"
+    C1 = "C1"
+    C2 = "C2"
 
 # Режимы англ: Обычный, Технический(Для работы)
 class Mode(str, Enum):

@@ -59,14 +59,16 @@ class UserService:
         if not user:
             return None
         
-        excluded_words = db.query(User_words.word_id).filter(User_words.user_id==user.id).subquery()
+        excluded_words = db.query(User_words.word_id).where(User_words.user_id == user.id)
         result = []
 
         words = db.query(Words).filter(
             ~Words.id.in_(excluded_words), 
             Words.level==user.level, Words.type==user.mode
         ).order_by(func.random()).limit(word_count).all()
-
+        print(words)
+        if not words:
+            return []
         for word in words:
             result.append({"id": word.id, "word": word.word, "translation": word.translation, "example": word.example})
 
