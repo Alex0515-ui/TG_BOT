@@ -8,18 +8,19 @@ import json
 import random
 from entities.models import Words
 from sqlalchemy import func
+from handlers.redis_handlers import get_daily, update_session, get_session
+from datetime import date
 
+# Функция проверки дневного лимита слов
+async def check_daily_limit(tg_id: int):
+    daily = await get_daily(tg_id=tg_id)
+    today = str(date.today())
 
-# Получение сессии из Redis
-async def get_session(tg_id: int):
-    data = await redis_client.get(f"session:{tg_id}")
-    if not data:
-        return None
-    return json.loads(data)
+    if daily and daily.get("last_date") == today:
+        return True
+    
+    return False
 
-# Обновление сессии
-async def update_session(tg_id: int, session: dict):
-    await redis_client.set(f"session:{tg_id}", json.dumps(session), ex=3600)
 
 # Отправка следующего слова
 async def send_next_word(tg_id: int, db: Session):
@@ -29,9 +30,15 @@ async def send_next_word(tg_id: int, db: Session):
         return 
     index = session["current_index"]
     words = session["words"]
-    print(words)
+
     if index >= len(words):
+        today = str(date.today())
+        data = {
+            "last_date": today
+        }
         await send_message(chat_id=tg_id, text=f"Поздравляю ты прошел все слова!")
+        await redis_client.set(f"daily:{tg_id}", value=json.dumps(data), ex=172000)
+        await redis_client.delete(f"session:{tg_id}")
         return
 
     word = words[index]
@@ -49,13 +56,15 @@ async def send_next_word(tg_id: int, db: Session):
                     "text": w,
                     "callback_data": f"answer_{word_id}_{w}"
                 }
-            ] for w in options
+                for w in options[i:i+2]
+            ] 
+            for i in range(0, len(options), 2)
         ]
     }
 
     await send_message(
         chat_id=tg_id, 
-        text=f"Переведи слово:\n\n{word['word']}", 
+        text=f"Переведи слово:  {word['word']}", 
         reply_markup=keyboard
     )
 
@@ -65,8 +74,14 @@ async def handle_set_words(callback, db: Session):
     tg_id = callback["from"]["id"]
     word_count = int(callback["data"].replace("set_word_count_", ""))
 
+    if await check_daily_limit(tg_id=tg_id):
+        return {
+            "chat_id": tg_id,
+            "text": "Ты уже прошел сегодняшние все слова, возвращайся завтра за новыми"
+        }
+    
     words = UserService.get_daily_words(db=db, tg_id=tg_id, word_count=word_count)
-    print(words)
+
     session_data = {
         "words": words,
         "current_index": 0
@@ -111,15 +126,14 @@ async def handle_repeat(callback, db: Session):
 # Обработка ответа
 async def handle_answer(callback, db: Session):
     tg_id = callback["from"]["id"]
-    print(callback)
     answer = callback["data"].replace("answer_", "")
-    print(answer)
     word_id, selected = answer.split("_", 1) 
 
     session = await get_session(tg_id=tg_id)
+
     if not session:
-        await send_message(chat_id=tg_id, text="К сожалению сессия уже истекла...")
-    print(session)
+        return await send_message(chat_id=tg_id, text="К сожалению сессия уже истекла...")
+
     word = session["words"][session["current_index"]]
     correct_translation = word["translation"]
 
@@ -129,7 +143,7 @@ async def handle_answer(callback, db: Session):
         await update_session(tg_id=tg_id, session=session)
 
         await send_message(chat_id=tg_id, text="Правильно!")
-        await send_next_word(tg_id=tg_id, db=db)
+        return await send_next_word(tg_id=tg_id, db=db)
     
     else:
         keyboard = {

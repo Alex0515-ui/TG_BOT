@@ -1,5 +1,19 @@
 from entities.models import Levels, Mode
 
+
+Main_menu_keyboard = {
+    "keyboard": [
+        [
+            {"text": "📚 Учить слова"},
+            {"text": "⚙️ Выбрать режим"}
+        ],  
+        [
+            {"text": "🎯 Выбрать уровень"}
+        ]
+    ],
+    "resize_keyboard": True
+}
+
 # Выбор режима
 Mode_keyboard = { 
     "inline_keyboard": [
@@ -25,6 +39,7 @@ Level_keyboard = {
 
 word_counts = [5, 10, 15, 20]
 
+# Выбор количества слов для изучения
 Word_count_keyboard = {
     "inline_keyboard" : [
         [

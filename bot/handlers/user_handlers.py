@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 from entities.keyboards import *
 from entities.models import User
 from handlers.word_handlers import *
+from handlers.redis_handlers import get_session
+
 
 # Обработчик создания пользователя
 async def handle_create_user(user, db: Session):
@@ -19,9 +21,11 @@ async def handle_create_user(user, db: Session):
 
 
 # Обработчик начала работы бота /start
-async def handle_start( user: User):
+async def handle_start(user: User, db: Session): 
+    
     if user.is_registered:
-            await send_message(chat_id=user.telegram_id, text=f"С возвращением {user.first_name}! Выбери режим на сегодня:", reply_markup=Mode_keyboard)
+            await send_message(chat_id=user.telegram_id, text=f"С возвращением {user.first_name}!")
+            await send_message(chat_id=user.telegram_id, text="Главное меню:", reply_markup=Main_menu_keyboard)
     else:
         await send_message(
             chat_id=user.telegram_id, 
@@ -34,6 +38,36 @@ async def handle_start( user: User):
             reply_markup=Level_keyboard     
         )
 
+# Обработчик начала обучения
+async def start_learning(user: User, db: Session):
+    session = await get_session(user.telegram_id)
+    
+    if not user.is_registered:
+        return await send_message(chat_id=user.telegram_id, text="Сначала выбери уровень и режим", reply_markup=Level_keyboard)
+
+    if session:
+        return await send_next_word(tg_id=user.telegram_id, db=db)
+    
+    if await check_daily_limit(tg_id=user.telegram_id):
+        return await send_message(chat_id=user.telegram_id, text="Ты уже прошел сегодняшние все слова, возвращайся завтра за новыми")
+        
+    
+    return await send_message(chat_id=user.telegram_id, text="Выбери режим на сегодня:", reply_markup=Mode_keyboard)
+    
+    
+# Обработчик текстовых команд    
+async def handle_message(user: User, text: str,  db: Session):
+
+    if text == "📚 Учить слова":
+        return await start_learning(user=user, db=db)
+        
+    elif text == "⚙️ Выбрать режим":
+        return await send_message(chat_id=user.telegram_id, text="Выбери режим:", reply_markup=Mode_keyboard)
+        
+    elif text == "🎯 Выбрать уровень":
+        return await send_message(chat_id=user.telegram_id, text="Выбери уровень:", reply_markup=Level_keyboard)
+        
+    
 # Главный обработчик действий
 async def handle_callback(callback, db: Session):
     action = callback["data"]
@@ -77,6 +111,15 @@ async def handle_set_mode(callback, db: Session):
 
     UserService.select_mode(db=db, tg_id=tg_id, mode=mode)
     UserService.complete_register(db=db, tg_id=tg_id)
+    
+    reached_limit = await check_daily_limit(tg_id=tg_id)
+    if reached_limit:
+        return {
+            "chat_id": tg_id,
+            "text": "Ты уже прошел сегодняшние все слова, возвращайся завтра за новыми",
+            "keyboard": None
+        }
+    
     return {
         "chat_id": tg_id,
         "text": f"Режим {mode} выбран! Начинаем обучение. Выбери количество слов для изучения сегодня:", 

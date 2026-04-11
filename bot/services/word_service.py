@@ -4,6 +4,7 @@ from datetime import  datetime, timedelta, timezone
 
 class WordService:
 
+    # Сохранение слова в БД
     @staticmethod
     def save_word_to_db(db: Session, tg_id: int, word_id: int):
         user = db.query(User).filter(User.telegram_id==tg_id).first()
