@@ -1,12 +1,12 @@
-from telegram import send_message
+from telegram import send_message, remove_reply_keyboard
 from services.user_service import *
 from services.word_service import *
 from sqlalchemy.orm import Session
 from entities.keyboards import *
 from entities.models import User
-from handlers.word_handlers import *
+from handlers.word_learn_handlers import *
 from handlers.redis_handlers import get_session
-
+from handlers.word_repeat_handlers import *
 
 # Обработчик создания пользователя
 async def handle_create_user(user, db: Session):
@@ -25,7 +25,7 @@ async def handle_start(user: User, db: Session):
     
     if user.is_registered:
             await send_message(chat_id=user.telegram_id, text=f"С возвращением {user.first_name}!")
-            await send_message(chat_id=user.telegram_id, text="Главное меню:", reply_markup=Main_menu_keyboard)
+            await send_message(chat_id=user.telegram_id, text="Главное меню:", reply_markup=Menu_keyboard)
     else:
         await send_message(
             chat_id=user.telegram_id, 
@@ -39,7 +39,9 @@ async def handle_start(user: User, db: Session):
         )
 
 # Обработчик начала обучения
-async def start_learning(user: User, db: Session):
+async def start_learning(tg_id: int, db: Session):
+    user = db.query(User).filter(User.telegram_id==tg_id).first()
+
     session = await get_session(user.telegram_id)
     
     if not user.is_registered:
@@ -56,21 +58,17 @@ async def start_learning(user: User, db: Session):
     
     
 # Обработчик текстовых команд    
-async def handle_message(user: User, text: str,  db: Session):
+async def handle_message(user: User, text: str):
+    if text == "Главное меню":
+        await send_message(chat_id=user.telegram_id, text="Главное меню", reply_markup=Menu_keyboard)
 
-    if text == "📚 Учить слова":
-        return await start_learning(user=user, db=db)
-        
-    elif text == "⚙️ Выбрать режим":
-        return await send_message(chat_id=user.telegram_id, text="Выбери режим:", reply_markup=Mode_keyboard)
-        
-    elif text == "🎯 Выбрать уровень":
-        return await send_message(chat_id=user.telegram_id, text="Выбери уровень:", reply_markup=Level_keyboard)
+    return
         
     
 # Главный обработчик действий
 async def handle_callback(callback, db: Session):
     action = callback["data"]
+    tg_id = callback["from"]["id"]
 
     if action.startswith("set_lvl_"):
         return await handle_set_level(callback=callback, db=db)
@@ -84,13 +82,18 @@ async def handle_callback(callback, db: Session):
     elif action.startswith("answer_"):
         return await handle_answer(callback=callback, db=db) 
     
-    elif action.startswith("remember_"):
-        return await handle_remember(callback=callback, db=db)
-    
-    elif action.startswith("repeat_"):
-        return await handle_repeat(callback=callback, db=db)
-    
+    elif action.startswith("set_repeat"):
+        return await start_repeat_session(tg_id=tg_id, db=db)
 
+    elif action.startswith("choose_level"):
+        return await send_message(chat_id=tg_id, text="Выбери уровень:", reply_markup=Level_keyboard)
+
+    elif action.startswith("choose_mode"):
+        return await send_message(chat_id=tg_id, text="Выбери режим:", reply_markup=Mode_keyboard)
+    
+    elif action.startswith("set_learning"):
+        return await start_learning(tg_id=tg_id, db=db)
+    
 # Обработчик установки уровня пользователя
 async def handle_set_level(callback, db: Session):
     tg_id = callback["from"]["id"]
@@ -110,9 +113,10 @@ async def handle_set_mode(callback, db: Session):
     mode = callback["data"].replace("set_mode_", "")
 
     UserService.select_mode(db=db, tg_id=tg_id, mode=mode)
-    UserService.complete_register(db=db, tg_id=tg_id)
+    await UserService.complete_register(db=db, tg_id=tg_id) 
     
     reached_limit = await check_daily_limit(tg_id=tg_id)
+
     if reached_limit:
         return {
             "chat_id": tg_id,
@@ -125,6 +129,8 @@ async def handle_set_mode(callback, db: Session):
         "text": f"Режим {mode} выбран! Начинаем обучение. Выбери количество слов для изучения сегодня:", 
         "keyboard": Word_count_keyboard
     }
+
+
 
 
 

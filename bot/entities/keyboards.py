@@ -2,16 +2,27 @@ from entities.models import Levels, Mode
 
 
 Main_menu_keyboard = {
-    "keyboard": [
+    "keyboard": [ 
         [
-            {"text": "📚 Учить слова"},
-            {"text": "⚙️ Выбрать режим"}
-        ],  
-        [
-            {"text": "🎯 Выбрать уровень"}
+            {"text": "Главное меню"}
         ]
     ],
-    "resize_keyboard": True
+    "resize_keyboard": True,
+    "one_time_keyboard": False
+}
+
+Menu_keyboard = {
+    "inline_keyboard": [
+        [
+            {"text": "📚 Учить слова", "callback_data": "set_learning"},
+        ],
+        [
+            {"text": "⚙️ Выбрать режим", "callback_data": "choose_mode"},
+        ],
+        [
+            {"text": "🎯 Выбрать уровень", "callback_data": "choose_level"},
+        ]
+    ]
 }
 
 # Выбор режима
@@ -46,6 +57,14 @@ Word_count_keyboard = {
             {"text": f"{count} слов",
              "callback_data": f"set_word_count_{count}"}
             for count in word_counts
+        ]
+    ]
+}
+
+Repeat_word_keyboard = {
+    "inline_keyboard": [
+        [
+            {"text": "Давай!", "callback_data": "set_repeat"}
         ]
     ]
 }

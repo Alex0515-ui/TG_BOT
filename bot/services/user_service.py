@@ -2,6 +2,9 @@ from sqlalchemy.orm import Session
 from entities.schemas import UserCreateSchema
 from entities.models import User, User_words, Words
 from sqlalchemy import func
+from telegram import send_message
+from entities.keyboards import Main_menu_keyboard
+
 
 class UserService:
 
@@ -47,12 +50,19 @@ class UserService:
 
     # Регистрация пользователя
     @staticmethod 
-    def complete_register(db: Session, tg_id: int):
+    async def complete_register(db: Session, tg_id: int):
         user = db.query(User).filter_by(telegram_id=tg_id).first()
+        if user.is_registered == False:
+            await send_message(
+                chat_id=user.telegram_id, 
+                text="Справа от поля ввода сообщения у тебя будет кнопка главного меню", 
+                reply_markup=Main_menu_keyboard
+            )
         if user:
             user.is_registered = True
             db.commit()
     
+    # Получение ежедневных слов
     @staticmethod
     def get_daily_words(db: Session, tg_id: int, word_count: int):
         user = db.query(User).filter_by(telegram_id=tg_id).first()

@@ -1,6 +1,7 @@
 from db.database import Base
 from sqlalchemy import Column, Integer,String, Enum as SQLEnum, BigInteger, func, DateTime, Boolean, ForeignKey
 from enum import Enum
+from sqlalchemy.orm import relationship
 
 # Уровни владения англ языком
 class Levels(str, Enum):
@@ -71,6 +72,9 @@ class User_words(Base):
 
     next_review_date = Column(DateTime(timezone=True))  # Следующее повторение слова
     repetition_stage = Column(Integer, default=0)   # Для отслеживания прогресса
+
+
+    word = relationship("Words")
 
 
 

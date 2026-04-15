@@ -49,8 +49,8 @@ async def webhook(req: Request, db: Session = Depends(get_db)):
             return {"ok": True}
 
         user = await handle_create_user(user=from_info, db=db)
-
-        await handle_message(user=user, text=message["text"], db=db)
+        print(message["text"])
+        await handle_message(user=user, text=message["text"])
 
         # Реакция на команду /start
         if message["text"] == "/start":

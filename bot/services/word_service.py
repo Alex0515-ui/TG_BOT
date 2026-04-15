@@ -1,4 +1,4 @@
-from entities.models import User, User_words, Word_Status
+from entities.models import User, User_words, Word_Status, Words
 from sqlalchemy.orm import Session
 from datetime import  datetime, timedelta, timezone
 
@@ -27,16 +27,18 @@ class WordService:
         db.commit()
         db.refresh(word)
 
+
+    # Прогресс изучения слов
     @staticmethod
     def process_answer(db: Session, word: User_words, correct: bool):
 
         REVIEW_INTERVALS = {
-            0: 1,
-            1: 3,
-            2: 5,
-            3: 7
+            0: 1,               # Повторение через 1 день
+            1: 3,               # Повторение через 3 дня
+            2: 5,               # Повторение через 5 дней
+            3: 7                # Повторение через 7 дней
         }
-
+        
         if correct:
             word.repetition_stage += 1
             if word.repetition_stage >= 4:
@@ -51,6 +53,15 @@ class WordService:
             word.next_review_date = datetime.now(timezone.utc) + timedelta(days=1)
         
         db.commit()
+
+    # Получение слов для повторения
+    @staticmethod
+    def get_words_to_repeat(db: Session, tg_id: int):
+        now = datetime.now(timezone.utc)
+        user = db.query(User).filter(User.telegram_id == tg_id).first()
+        data = db.query(User_words).filter(User_words.next_review_date <= now, User_words.user_id == user.id).all()
+        return data
+
 
     
 
