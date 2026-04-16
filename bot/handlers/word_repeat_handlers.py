@@ -34,19 +34,21 @@ async def send_word_repeat(tg_id: int, db: Session):
     options = wrong_translations + [word["translation"]]
     random.shuffle(options)
 
+    session["options"] = options
+    await set_repeat_session(tg_id=tg_id, session=session)
+    
     keyboard = {
         "inline_keyboard": [
             [
                 {
                     "text": opt,
-                    "callback_data": f"answer_repeat_{word['id']}_{opt}"
+                    "callback_data": f"answer_repeat_{word['id']}_{idx}"
                 }
-                for opt in options[i:i+2]
-            ] 
-            for i in range(0, len(options), 2)
+                for idx, opt in enumerate(options[i:i+2], start=i)
+            ] for i in range(0, len(options), 2)
         ]
     }
-
+    print("ВОТ СЛОВОО:::::", word)
     await send_message(
         chat_id=tg_id, 
         text=f"Переведи слово: {word['word']}\nПример: {word['example']}", 

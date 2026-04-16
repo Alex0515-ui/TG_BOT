@@ -1,4 +1,4 @@
-from telegram import send_message, remove_reply_keyboard
+from telegram import send_message
 from services.user_service import *
 from services.word_service import *
 from sqlalchemy.orm import Session
