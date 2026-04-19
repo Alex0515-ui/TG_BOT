@@ -14,7 +14,9 @@ async def get_session(tg_id: int):
 async def update_session(tg_id: int, session: dict):
     await redis_client.set(f"session:{tg_id}", json.dumps(session), ex=3600)
 
+
 # ============ ДНЕВНОЙ ЛИМИТ ===============================
+
 
 # Получение сессии последней даты изучения слов
 async def get_daily(tg_id: int):
@@ -43,7 +45,10 @@ async def get_daily_dialogue(tg_id:int):
 async def set_daily_dialogue(tg_id:int, date: str):
     await redis_client.set(f"daily_dialogue:{tg_id}", json.dumps({"last_date": date}), ex=172800)
 
+
+
 # ======== ПОВТОРЕНИЕ СЛОВ ==============================
+
 
 # Получение сессии повторения слов
 async def get_repeat_session(tg_id: int):
@@ -54,7 +59,9 @@ async def get_repeat_session(tg_id: int):
 async def set_repeat_session(tg_id: int, session: dict):
     await redis_client.set(f"repeat:{tg_id}", json.dumps(session), ex=18000)
 
+
 # ================ ДИАЛОГ С ИИ ===================
+
 
 # Получение истории чата
 async def get_chat_dialogue(tg_id:int):
@@ -66,6 +73,28 @@ async def get_chat_dialogue(tg_id:int):
 async def save_chat_dialogue(tg_id:int, history: dict):
     await redis_client.set(f"dialogue:{tg_id}", json.dumps(history))
 
+
+# ============ ПРАКТИКА СЛОВ  =========
+
+# Получение временного хранилища слов
+async def get_practise(tg_id: int):
+    data = await redis_client.get(f"practise:{tg_id}")
+    if data:
+        return json.loads(data)
+    
+# Временное хранилише слов
+async def set_practise(tg_id: int, data):
+    await redis_client.set(f"practise:{tg_id}", json.dumps(data))
+
+# Получение сессии для практики
+async def get_session_practise(tg_id: int):
+    data = await redis_client.get(f"practise_session:{tg_id}")
+    if data:
+        return json.loads(data)
+
+# Сессия слов для практики
+async def set_session_practise(tg_id: int, data):
+    await redis_client.set(f"practise_session:{tg_id}", json.dumps(data), ex=21600)
 
 
 

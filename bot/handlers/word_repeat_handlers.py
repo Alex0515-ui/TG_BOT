@@ -11,7 +11,6 @@ from handlers.redis_handlers import *
 # Отправка слов на повторение
 async def send_word_repeat(tg_id: int, db: Session):
     session = await get_repeat_session(tg_id=tg_id)
-    print(session)
     if not session:
         return 
 
@@ -48,7 +47,6 @@ async def send_word_repeat(tg_id: int, db: Session):
             ] for i in range(0, len(options), 2)
         ]
     }
-    print("ВОТ СЛОВОО:::::", word)
     await send_message(
         chat_id=tg_id, 
         text=f"Переведи слово: {word['word']}\nПример: {word['example']}", 

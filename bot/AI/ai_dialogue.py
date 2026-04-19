@@ -35,7 +35,7 @@ async def send_chat_message(tg_id:int, user_text: str, db: Session):
     if history.get("used", 0) >= history.get("limit", 10):
         today = str(date.today())
         await redis_client.delete(f"dialogue:{tg_id}")
-        
+
         await set_daily_dialogue(tg_id=tg_id, date=today)
         return await send_message(chat_id=user.telegram_id, text="Лимит диалога исчерпан, возвращайся завтра")
 
@@ -77,3 +77,4 @@ async def send_chat_message(tg_id:int, user_text: str, db: Session):
     return await send_message(chat_id=tg_id, text=response_text)
 
     
+

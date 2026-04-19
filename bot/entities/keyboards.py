@@ -71,3 +71,12 @@ Repeat_word_keyboard = {
         ]
     ]
 }
+
+Practise_keyboard = {
+    "inline_keyboard": [
+        [
+            {"text": "Давай", "callback_data": "set_practise_yes"},
+            {"text": "Нет, не сегодня", "callback_data": "set_practise_no"}
+        ]
+    ]
+}

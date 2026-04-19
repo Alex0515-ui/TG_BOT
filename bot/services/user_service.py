@@ -76,7 +76,7 @@ class UserService:
             ~Words.id.in_(excluded_words), 
             Words.level==user.level, Words.type==user.mode
         ).order_by(func.random()).limit(word_count).all()
-        print(words)
+
         if not words:
             return []
         for word in words:

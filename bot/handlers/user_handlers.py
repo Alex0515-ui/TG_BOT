@@ -8,7 +8,7 @@ from handlers.word_learn_handlers import *
 from handlers.redis_handlers import get_session
 from handlers.word_repeat_handlers import *
 from handlers.dialogue_handlers import *
-
+from handlers.practise_handlers import *
 
 # Обработчик создания пользователя
 async def handle_create_user(user, db: Session):
@@ -93,6 +93,13 @@ async def handle_callback(callback, db: Session):
     
     elif action.startswith("start_dialogue"):
         return await start_dialogue(tg_id=tg_id)
+    
+    elif action.startswith("set_practise_yes"):
+        return await Yes_practise(callback=callback, tg_id=tg_id)
+    
+    elif action.startswith("set_practise_no"):
+        return await No_practise(callback=callback, tg_id=tg_id)
+    
 # Обработчик установки уровня пользователя
 async def handle_set_level(callback, db: Session):
     tg_id = callback["from"]["id"]

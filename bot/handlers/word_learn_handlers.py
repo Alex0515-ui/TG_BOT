@@ -11,14 +11,13 @@ from sqlalchemy import func
 from handlers.redis_handlers import *
 from datetime import date
 from handlers.word_repeat_handlers import *
+from handlers.practise_handlers import send_practise_question
 
-TEACHER_GENERATE_PROMPT = "Ты "
 # Функция проверки дневного лимита слов
 async def check_daily_limit(tg_id: int):
     daily = await get_daily(tg_id=tg_id)
     today = str(date.today())
     if daily and daily.get("last_date") == today:
-        print("Дата: ", daily)
         return True
         
     
@@ -178,7 +177,6 @@ async def handle_answer(callback, db: Session):
 
         if user_word:
             WordService.process_answer(db=db, word=user_word, correct=False)
-            print("Обнулил прогресс слова")
 
     session["current_index"] += 1
 
@@ -186,14 +184,20 @@ async def handle_answer(callback, db: Session):
         if mode == "repeat":
             await redis_client.delete(f"repeat:{tg_id}")
         else:
+            data = {
+                "words": session["words"],
+                "created_at": str(datetime.now())
+            }
+            await set_practise(tg_id=tg_id, data=data)
             await redis_client.delete(f"session:{tg_id}")
 
         await finish_learning(tg_id=tg_id)
         
-        return await send_message(
+        await send_message(
             chat_id=tg_id,
             text="Поздравляю, ты прошел все слова!"
         )
+        return await send_practise_question(tg_id=tg_id)
         
     if mode == "repeat":
         await set_repeat_session(tg_id=tg_id, session=session)
