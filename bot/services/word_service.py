@@ -1,4 +1,4 @@
-from entities.models import User, User_words, Word_Status, Words
+from entities.models import User, User_words, Word_Status
 from sqlalchemy.orm import Session
 from datetime import  datetime, timedelta, timezone
 

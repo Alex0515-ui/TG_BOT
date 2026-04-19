@@ -7,6 +7,8 @@ from entities.models import User
 from handlers.word_learn_handlers import *
 from handlers.redis_handlers import get_session
 from handlers.word_repeat_handlers import *
+from handlers.dialogue_handlers import *
+
 
 # Обработчик создания пользователя
 async def handle_create_user(user, db: Session):
@@ -57,12 +59,7 @@ async def start_learning(tg_id: int, db: Session):
     return await send_message(chat_id=user.telegram_id, text="Выбери режим на сегодня:", reply_markup=Mode_keyboard)
     
     
-# Обработчик текстовых команд    
-async def handle_message(user: User, text: str):
-    if text == "Главное меню":
-        await send_message(chat_id=user.telegram_id, text="Главное меню", reply_markup=Menu_keyboard)
 
-    return
         
     
 # Главный обработчик действий
@@ -94,6 +91,8 @@ async def handle_callback(callback, db: Session):
     elif action.startswith("set_learning"):
         return await start_learning(tg_id=tg_id, db=db)
     
+    elif action.startswith("start_dialogue"):
+        return await start_dialogue(tg_id=tg_id)
 # Обработчик установки уровня пользователя
 async def handle_set_level(callback, db: Session):
     tg_id = callback["from"]["id"]

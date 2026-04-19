@@ -12,3 +12,4 @@ redis
 celery
 google
 google-genai
+groq

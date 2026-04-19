@@ -10,9 +10,9 @@ celery_app.conf.update(
 )
 
 celery_app.conf.beat_schedule = {
-    'send-review-every-15-minutes': {
+    'send-review-every-3-hours': {
         'task': 'tasks.Check_repetitions',
-        'schedule': 900.0
+        'schedule': 10800
     }
 }
 

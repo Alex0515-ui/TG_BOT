@@ -5,7 +5,8 @@ from contextlib import asynccontextmanager
 from db.database import get_db
 from sqlalchemy.orm import Session
 from entities.keyboards import *
-from handlers.user_handlers import handle_callback, handle_start, handle_create_user, handle_message
+from handlers.user_handlers import handle_callback, handle_start, handle_create_user
+from handlers.dialogue_handlers import handle_message
 from telegram import send_message
 from db.database import Base, engine
 
@@ -50,7 +51,7 @@ async def webhook(req: Request, db: Session = Depends(get_db)):
 
         user = await handle_create_user(user=from_info, db=db)
         print(message["text"])
-        await handle_message(user=user, text=message["text"])
+        await handle_message(user=user, text=message["text"], db=db)
 
         # Реакция на команду /start
         if message["text"] == "/start":

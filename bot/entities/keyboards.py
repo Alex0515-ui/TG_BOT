@@ -14,6 +14,9 @@ Main_menu_keyboard = {
 Menu_keyboard = {
     "inline_keyboard": [
         [
+            {"text":"💬 Диалог с ИИ ассистентом", "callback_data": "start_dialogue"}
+        ],
+        [
             {"text": "📚 Учить слова", "callback_data": "set_learning"},
         ],
         [

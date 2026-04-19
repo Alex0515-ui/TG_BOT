@@ -12,6 +12,7 @@ from handlers.redis_handlers import *
 from datetime import date
 from handlers.word_repeat_handlers import *
 
+TEACHER_GENERATE_PROMPT = "Ты "
 # Функция проверки дневного лимита слов
 async def check_daily_limit(tg_id: int):
     daily = await get_daily(tg_id=tg_id)

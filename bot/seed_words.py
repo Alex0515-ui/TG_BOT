@@ -23,6 +23,7 @@ def get_words_from_ai(prompt: str):
                 )
             )
             return json.loads(response.text)
+        
         except Exception as e:
             if "429" in str(e):
                 wait = 70
