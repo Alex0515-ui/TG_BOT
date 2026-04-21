@@ -27,6 +27,8 @@ class WordService:
         db.commit()
         db.refresh(word)
 
+        return word
+
 
     # Прогресс изучения слов
     @staticmethod
@@ -54,10 +56,13 @@ class WordService:
         
         db.commit()
 
+        return word
+
     # Получение слов для повторения
     @staticmethod
-    def get_words_to_repeat(db: Session, tg_id: int):
-        now = datetime.now(timezone.utc)
+    def get_words_to_repeat(db: Session, tg_id: int, now=None):
+        if not now:
+            now = datetime.now(timezone.utc)
         user = db.query(User).filter(User.telegram_id == tg_id).first()
         data = db.query(User_words).filter(User_words.next_review_date <= now, User_words.user_id == user.id).all()
         return data

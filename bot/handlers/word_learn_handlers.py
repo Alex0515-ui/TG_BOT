@@ -9,7 +9,7 @@ import random
 from entities.models import Words
 from sqlalchemy import func
 from handlers.redis_handlers import *
-from datetime import date
+from datetime import date, datetime
 from handlers.word_repeat_handlers import *
 from handlers.practise_handlers import send_practise_question
 
@@ -191,13 +191,16 @@ async def handle_answer(callback, db: Session):
             await set_practise(tg_id=tg_id, data=data)
             await redis_client.delete(f"session:{tg_id}")
 
+            
+
         await finish_learning(tg_id=tg_id)
         
         await send_message(
             chat_id=tg_id,
             text="Поздравляю, ты прошел все слова!"
         )
-        return await send_practise_question(tg_id=tg_id)
+        if mode != "repeat":
+            return await send_practise_question(tg_id=tg_id)
         
     if mode == "repeat":
         await set_repeat_session(tg_id=tg_id, session=session)

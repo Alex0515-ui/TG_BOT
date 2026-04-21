@@ -13,3 +13,4 @@ celery
 google
 google-genai
 groq
+pytest

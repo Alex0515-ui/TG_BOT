@@ -12,7 +12,7 @@ from handlers.redis_handlers import *
 async def send_word_repeat(tg_id: int, db: Session):
     session = await get_repeat_session(tg_id=tg_id)
     if not session:
-        return 
+        return await send_message(chat_id=tg_id, text="Сессия закончилась")
 
     index = session["current_index"]
     words = session["words"]
