@@ -2,8 +2,8 @@ from db.database import Base
 import pytest
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from entities import models
 
+# Создаем фейковую БД для ТЕСТОВ
 @pytest.fixture
 def db():
 

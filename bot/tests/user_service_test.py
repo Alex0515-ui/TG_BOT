@@ -1,4 +1,3 @@
-import pytest
 from services.user_service import UserService
 from entities.models import *
 from entities.schemas import UserCreateSchema
@@ -19,6 +18,7 @@ def test_create_user_new(db):
     assert user is not None
     assert user.telegram_id == 123
     assert user.first_name == "Test"
+
 
 # Тут проверяем на дубликат, чтобы юзер дважды не создался
 def test_create_user_existing(db):
@@ -99,6 +99,7 @@ def test_get_daily_words_excludes_learned(db):
     result = UserService.get_daily_words(db=db, tg_id=123, word_count=5)
 
     assert result == []
+
 
 # Если юзера нету, ничего не будет
 def test_get_daily_words_no_user(db):

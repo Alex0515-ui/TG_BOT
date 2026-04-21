@@ -60,8 +60,6 @@ async def start_learning(tg_id: int, db: Session):
     
     
 
-        
-    
 # Главный обработчик действий
 async def handle_callback(callback, db: Session):
     action = callback["data"]
@@ -100,6 +98,7 @@ async def handle_callback(callback, db: Session):
     elif action.startswith("set_practise_no"):
         return await No_practise(callback=callback, tg_id=tg_id)
     
+
 # Обработчик установки уровня пользователя
 async def handle_set_level(callback, db: Session):
     tg_id = callback["from"]["id"]
@@ -112,6 +111,7 @@ async def handle_set_level(callback, db: Session):
         "text": f"Уровень {level} установлен! Теперь выбери сегодняшний режим обучения:",
         "keyboard": Mode_keyboard
     }
+
 
 # Обработчик установки режима
 async def handle_set_mode(callback, db: Session):

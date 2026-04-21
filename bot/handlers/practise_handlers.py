@@ -86,7 +86,7 @@ async def Yes_practise(callback, tg_id:int):
 
     return await send_next_task(tg_id=tg_id)
 
-
+# Проверка ответа С помошью ИИ
 async def handle_practise_answer(tg_id: int, user_text: str):
     data = await get_session_practise(tg_id=tg_id)
 

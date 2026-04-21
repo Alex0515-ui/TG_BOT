@@ -1,6 +1,6 @@
 from entities.models import Levels, Mode
 
-
+# Главное меню кнопка
 Main_menu_keyboard = {
     "keyboard": [ 
         [
@@ -11,6 +11,7 @@ Main_menu_keyboard = {
     "one_time_keyboard": False
 }
 
+# Кнопки в главном меню
 Menu_keyboard = {
     "inline_keyboard": [
         [
@@ -64,6 +65,7 @@ Word_count_keyboard = {
     ]
 }
 
+# Кнопка для повторения слов
 Repeat_word_keyboard = {
     "inline_keyboard": [
         [
@@ -72,6 +74,7 @@ Repeat_word_keyboard = {
     ]
 }
 
+# Кнопки для вопроса будет ли практика слов
 Practise_keyboard = {
     "inline_keyboard": [
         [

@@ -46,7 +46,6 @@ async def set_daily_dialogue(tg_id:int, date: str):
     await redis_client.set(f"daily_dialogue:{tg_id}", json.dumps({"last_date": date}), ex=172800)
 
 
-
 # ======== ПОВТОРЕНИЕ СЛОВ ==============================
 
 

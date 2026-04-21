@@ -8,7 +8,7 @@ client = Groq(api_key=settings.GROQ_API_KEY)
 
 # Генерация предложений
 async def generate_sentences(words: list[str]):
-    print(words)
+
     prompt = "Words:\n" + "\n".join(words)
 
     completion = client.chat.completions.create(

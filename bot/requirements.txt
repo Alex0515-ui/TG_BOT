@@ -14,3 +14,5 @@ google
 google-genai
 groq
 pytest
+pytest-mock
+pytest-asyncio

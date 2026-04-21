@@ -13,9 +13,11 @@ from datetime import date, datetime
 from handlers.word_repeat_handlers import *
 from handlers.practise_handlers import send_practise_question
 
+
 # Функция проверки дневного лимита слов
 async def check_daily_limit(tg_id: int):
     daily = await get_daily(tg_id=tg_id)
+    print(daily)
     today = str(date.today())
     if daily and daily.get("last_date") == today:
         return True
@@ -144,7 +146,6 @@ async def handle_answer(callback, db: Session):
     
     options = session["options"]
     selected = options[selected_index]
-
     word = session["words"][session["current_index"]]
     correct_translation = word["translation"]
 
