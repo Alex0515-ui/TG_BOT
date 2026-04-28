@@ -24,7 +24,7 @@ async def start_dialogue(tg_id: int):
     limit = await check_daily_limit_dialogue(tg_id=tg_id)
 
     if limit:
-        return await send_message(chat_id=tg_id, text="Ты уже поговорил с ИИ ассистентом сегодня\nМожешь завтра с ним заново поговорить!")
+        return await send_message(chat_id=tg_id, text="Ты уже поговорил с ИИ ассистентом сегодня\nМожешь поговорить с ним завтра заново!")
     
     await redis_client.set(
         f"dialogue:{tg_id}", 

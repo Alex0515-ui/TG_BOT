@@ -33,7 +33,6 @@ async def generate_sentences(words: list[str]):
 
 # Просто обертка для сообщения в ИИ
 def build_check_prompt(word: str, ru_sentences: list[str], user_answer: str):
-    print(ru_sentences)
     ru_text = "\n".join([f"{i+1}. {s}" for i, s in enumerate(ru_sentences)])
 
     return f"""Target word: {word}

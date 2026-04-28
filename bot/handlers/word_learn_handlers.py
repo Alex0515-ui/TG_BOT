@@ -6,18 +6,19 @@ from entities.keyboards import *
 from db.config import redis_client
 import json
 import random
-from entities.models import Words
+from entities.models import *
 from sqlalchemy import func
 from handlers.redis_handlers import *
 from datetime import date, datetime
 from handlers.word_repeat_handlers import *
 from handlers.practise_handlers import send_practise_question
+import logging
 
+logger = logging.getLogger(__name__)
 
 # Функция проверки дневного лимита слов
 async def check_daily_limit(tg_id: int):
     daily = await get_daily(tg_id=tg_id)
-    print(daily)
     today = str(date.today())
     if daily and daily.get("last_date") == today:
         return True
@@ -126,90 +127,100 @@ async def handle_set_words(callback, db: Session):
 
 # Обработка ответа на слово
 async def handle_answer(callback, db: Session):
-    tg_id = callback["from"]["id"]
-    answer = callback["data"].replace("answer_", "")
-    parts = answer.split("_")
-    mode = parts[0]
-    word_id = parts[1]
-    selected_index = int(parts[2])
+
+    try:
+        tg_id = callback["from"]["id"]
+        answer = callback["data"].replace("answer_", "")
+        parts = answer.split("_")
+        mode = parts[0]
+        word_id = parts[1]
+        selected_index = int(parts[2])
 
 
-    await edit_message_keyboard(chat_id=tg_id, message_id=callback["message"]["message_id"], reply_markup=None)
+        await edit_message_keyboard(chat_id=tg_id, message_id=callback["message"]["message_id"], reply_markup=None)
 
-    if mode == "repeat":
-        session = await get_repeat_session(tg_id=tg_id)
-    else:
-        session = await get_session(tg_id=tg_id)
-
-    if not session:
-        return await send_message(chat_id=tg_id, text="Сессия истекла...")
-    
-    options = session["options"]
-    selected = options[selected_index]
-    word = session["words"][session["current_index"]]
-    correct_translation = word["translation"]
-
-    is_correct = selected == correct_translation
-
-    user = db.query(User).filter(User.telegram_id == tg_id).first()
-
-    user_word = db.query(User_words).filter(
-        User_words.user_id == user.id,
-        User_words.word_id == int(word_id)
-    ).first()
-
-    if is_correct:
-
-        if mode == "learn":
-            if not user_word:
-                WordService.save_word_to_db(db=db, tg_id=tg_id, word_id=int(word_id))
-
-        elif mode == "repeat":
-            if user_word:
-                WordService.process_answer(db=db, word=user_word, correct=True)
-
-        await send_message(chat_id=tg_id, text="✅ Правильно!")
-
-    else:
-        await send_message(
-            chat_id=tg_id,
-            text=f"❌ Неправильно\nПравильный ответ: {correct_translation}"
-        )
-
-        if user_word:
-            WordService.process_answer(db=db, word=user_word, correct=False)
-
-    session["current_index"] += 1
-
-    if session["current_index"] >= len(session["words"]):
         if mode == "repeat":
-            await redis_client.delete(f"repeat:{tg_id}")
+            session = await get_repeat_session(tg_id=tg_id)
         else:
-            data = {
-                "words": session["words"],
-                "created_at": str(datetime.now())
-            }
-            await set_practise(tg_id=tg_id, data=data)
-            await redis_client.delete(f"session:{tg_id}")
+            session = await get_session(tg_id=tg_id)
 
+        if not session:
+            return await send_message(chat_id=tg_id, text="Сессия истекла...")
+        
+        options = session["options"]
+        selected = options[selected_index]
+        word = session["words"][session["current_index"]]
+        correct_translation = word["translation"]
+
+        is_correct = selected == correct_translation
+
+        user = db.query(User).filter(User.telegram_id == tg_id).first()
+
+        user_word = db.query(User_words).filter(
+            User_words.user_id == user.id,
+            User_words.word_id == int(word_id)
+        ).first()
+
+        if is_correct:
+
+            if mode == "learn":
+                if not user_word:
+                    WordService.save_word_to_db(db=db, tg_id=tg_id, word_id=int(word_id))
+
+            elif mode == "repeat":
+                if user_word:
+                    WordService.process_answer(db=db, word=user_word, correct=True)
+
+            await send_message(chat_id=tg_id, text="✅ Правильно!")
+
+        else:
+            await send_message(
+                chat_id=tg_id,
+                text=f"❌ Неправильно\nПравильный ответ: {correct_translation}"
+            )
+
+            if user_word:
+                WordService.process_answer(db=db, word=user_word, correct=False)
+
+        session["current_index"] += 1
+
+        if session["current_index"] >= len(session["words"]):
+            if mode == "repeat":
+                await redis_client.delete(f"repeat:{tg_id}")
+
+            else:
+                data = {
+                    "words": session["words"],
+                    "created_at": str(datetime.now())
+                }
+
+                await set_practise(tg_id=tg_id, data=data)
+                await redis_client.delete(f"session:{tg_id}")
+
+                await send_message(
+                    chat_id=tg_id,
+                    text="Поздравляю, ты прошел все слова!"
+                )
+
+            await finish_learning(tg_id=tg_id)
             
+            if mode != "repeat":
+                return await send_practise_question(tg_id=tg_id)
+            
+        if mode == "repeat":
+            await set_repeat_session(tg_id=tg_id, session=session)
+            return await send_word_repeat(tg_id=tg_id, db=db)
+        
+        else:
+            await update_session(tg_id=tg_id, session=session)
+            return await send_next_word(tg_id=tg_id, db=db)
+        
+    except Exception as e:
+        logger.error(f"Ошибка в handle_answer: {e}", exc_info=True)
 
-        await finish_learning(tg_id=tg_id)
-        
         await send_message(
-            chat_id=tg_id,
-            text="Поздравляю, ты прошел все слова!"
+            chat_id=callback["from"]["id"],
+            text="⚠️ Произошла ошибка, попробуй ещё раз"
         )
-        if mode != "repeat":
-            return await send_practise_question(tg_id=tg_id)
-        
-    if mode == "repeat":
-        await set_repeat_session(tg_id=tg_id, session=session)
-        return await send_word_repeat(tg_id=tg_id, db=db)
-    
-    else:
-        await update_session(tg_id=tg_id, session=session)
-        return await send_next_word(tg_id=tg_id, db=db)
-    
 
 
