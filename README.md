@@ -1,104 +1,254 @@
-🤖 TG_BOT — Telegram-бот для изучения английского с AI Telegram-бот на Python, созданный как личный инструмент для изучения английского языка, с поддержкой AI-диалога, системы уровней и режимов обучения. Работает через webhook и развёртывается с помощью Docker Compose.
+# 🤖 TG_BOT — Telegram-бот для изучения английского с AI
 
-📋 Содержание Описание Технологии Структура проекта Быстрый старт Настройка webhook (ngrok) Команды управления Заполнение базы данных Тестирование Переменные окружения
+Telegram-бот на Python, созданный как **личный инструмент для изучения английского языка**, с поддержкой AI-диалога, системы уровней и режимов обучения. Работает через **webhook** и развёртывается с помощью Docker Compose.
 
-Описание Этот проект был разработан как решение личной проблемы: большинство сервисов для изучения английского языка либо платные, либо не подходят под реальные задачи разработчика.
+---
+
+## 📋 Содержание
+
+* [Описание](#описание)
+* [Технологии](#технологии)
+* [Структура проекта](#структура-проекта)
+* [Быстрый старт](#быстрый-старт)
+* [Настройка webhook (ngrok)](#настройка-webhook-ngrok)
+* [Команды управления](#команды-управления)
+* [Заполнение базы данных](#заполнение-базы-данных)
+* [Тестирование](#тестирование)
+* [Переменные окружения](#переменные-окружения)
+
+---
+
+## Описание
+
+Этот проект был разработан как **решение личной проблемы**:
+большинство сервисов для изучения английского языка либо платные, либо не подходят под реальные задачи разработчика.
 
 Поэтому бот был создан для:
 
-практики английского через диалог изучения слов через контекст понимания технической документации
+* практики английского через диалог
+* изучения слов через контекст
+* понимания технической документации
 
-👉 Основная идея: учить английский через реальное использование и взаимодействие с AI
+👉 Основная идея: **учить английский через реальное использование и взаимодействие с AI**
 
-Основные возможности: AI-диалог — общение через LLM (Groq API)
+### Основные возможности:
 
-Словарь слов — база данных слов, автоматически заполняемая через Gemini API (seed_words.py)
+* **AI-диалог** — общение через LLM (Groq API)
+* **Словарь слов** — база данных слов, автоматически заполняемая через Gemini API (`seed_words.py`)
+* **Практика перевода** — пользователь переводит предложения, AI проверяет и анализирует ответ
+* **Система уровней** — 6 уровней сложности (от базового до продвинутого)
+* **Режимы обучения:**
 
-Практика перевода — пользователь переводит предложения, AI проверяет и анализирует ответ
+  * `general` — общий английский (повседневная речь)
+  * `tech` — технический английский (для чтения документации и разработки)
+* **Webhook Telegram** — обработка обновлений через HTTP (без polling)
+* **REST API (web-сервис)** — управление логикой и данными
+* **PostgreSQL** — хранение слов, прогресса и состояний
+* **Redis** — хранение временных данных и сессий
+* **Celery** — фоновые задачи (например, генерация слов)
+* **Тесты** — покрытие через `pytest`
 
-Система уровней — 6 уровней сложности (от базового до продвинутого)
+---
 
-Режимы обучения:
+## Технологии
 
-general — общий английский (повседневная речь) tech — технический английский (для чтения документации и разработки)
+| Технология                 | Назначение           |
+| -------------------------- | -------------------- |
+| Python                     | Основной язык        |
+| Webhook (Telegram Bot API) | Получение обновлений |
+| SQLAlchemy / Alembic       | ORM и миграции       |
+| PostgreSQL                 | Основная база данных |
+| Redis                      | Временные данные     |
+| Celery                     | Фоновые задачи       |
+| Groq API                   | AI-диалог и проверка |
+| Gemini API                 | Генерация слов       |
+| Docker & Docker Compose    | Контейнеризация      |
+| pytest                     | Тестирование         |
 
-Webhook Telegram — обработка обновлений через HTTP (без polling)
+---
 
-REST API (web-сервис) — управление логикой и данными
+## Структура проекта
 
-PostgreSQL — хранение слов, прогресса и состояний
+```
+TG_BOT/
+└── bot/
+    ├── docker-compose.yml      # Сервисы (db, redis, web, worker)
+    ├── Dockerfile              # Образ приложения
+    ├── tasks.py                # Celery задачи
+    ├── telegram.py             # Webhook обработка Telegram
+    ├── main.py                 # Точка входа
+    ├── seed_words.py           # Генерация слов через Gemini
+    ├── alembic/                # Миграции
+    ├── app/
+    │   ├── handlers/           # Обработчики сообщений
+    │   ├── AI/                 # Работа с Groq/Gemini
+    │   ├── db/                 # Конфигурация БД
+    │   ├── entities/           # ORM модели
+    │   └── services/           # Бизнес-логика
+    └── tests/                  # Тесты
+```
 
-Redis — хранение временных данных и сессий
+---
 
-Celery — фоновые задачи (например, генерация слов)
+## Быстрый старт
 
-Тесты — покрытие через pytest
+### Требования
 
-Технологии Технология Назначение Python Основной язык Webhook (Telegram Bot API) Получение обновлений SQLAlchemy / Alembic ORM и миграции PostgreSQL Основная база данных Redis Временные данные Celery Фоновые задачи Groq API AI-диалог и проверка Gemini API Генерация слов Docker & Docker Compose Контейнеризация pytest Тестирование
+* Docker и Docker Compose
+* Telegram Bot Token
+* API-ключи:
 
-Структура проекта TG_BOT/ └── bot/ ├── docker-compose.yml # Сервисы (db, redis, web, worker) ├── Dockerfile # Образ приложения ├── tasks.py # Celery задачи ├── telegram.py # Webhook обработка Telegram ├── main.py # Точка входа ├── seed_words.py # Генерация слов через Gemini ├── alembic/ # Миграции ├── app/ │ ├── handlers/ # Обработчики сообщений │ ├── AI/ # Работа с Groq/Gemini │ ├── db/ # Конфигурация БД │ ├── entities/ # ORM модели │ └── services/ # Бизнес-логика └── tests/ # Тесты
+  * Groq (диалог)
+  * Gemini (генерация слов)
 
-Быстрый старт Требования
+### 1. Клонировать репозиторий
 
-Docker и Docker Compose
+```bash
+git clone https://github.com/Alex0515-ui/TG_BOT.git
+cd TG_BOT
+```
 
-Telegram Bot Token
+### 2. Настроить переменные окружения
 
-API-ключи:
+```bash
+cd bot
+cp .env.example .env
+```
 
-Groq (диалог) Gemini (генерация слов)
+### 3. Запуск
 
-Клонировать репозиторий git clone https://github.com/Alex0515-ui/TG_BOT.git cd TG_BOT
+```bash
+docker-compose up --build
+```
 
-Настроить переменные окружения cd bot cp .env.example .env
+---
 
-Запуск docker-compose up --build
-
-🌐 Настройка webhook (ngrok)
+## 🌐 Настройка webhook (ngrok)
 
 Поскольку Telegram требует публичный HTTPS URL для webhook, при локальной разработке используется ngrok.
 
-Требования ngrok (https://ngrok.com/download) Аккаунт ngrok и authtoken
+### Требования
 
-Установить ngrok Скачайте и распакуйте ngrok
+* [ngrok](https://ngrok.com/download)
+* Аккаунт ngrok и authtoken
 
-Получить authtoken https://dashboard.ngrok.com/signup https://dashboard.ngrok.com/get-started/your-authtoken
+### 1. Установить ngrok
 
-Добавить токен ngrok config add-authtoken YOUR_TOKEN_HERE
+Скачайте и распакуйте ngrok.
 
-Запустить ngrok ngrok http 8000
+### 2. Получить authtoken
 
-Вы получите URL вида: https://xxxx.ngrok-free.app
+* https://dashboard.ngrok.com/signup
+* https://dashboard.ngrok.com/get-started/your-authtoken
 
-Указать webhook Добавьте в .env: WEBHOOK_URL=https://xxxx.ngrok-free.app/webhook
-Перезапустите проект: docker-compose down docker-compose up
+### 3. Добавить токен
 
-Важно URL меняется при каждом запуске нужно обновлять WEBHOOK_URL используется только для разработки
+```bash
+ngrok config add-authtoken YOUR_TOKEN_HERE
+```
 
-Ошибка ERR_NGROK_4018 — не добавлен authtoken
+### 4. Запустить ngrok
 
-Решение: ngrok config add-authtoken YOUR_TOKEN_HERE
+```bash
+ngrok http 8000
+```
 
-Команды управления Команда Описание docker-compose up --build Запуск docker-compose up -d Фоновый запуск docker-compose down Остановка docker-compose logs -f Логи docker-compose ps Статус
+Вы получите URL вида: `https://xxxx.ngrok-free.app`
 
-Заполнение базы данных docker-compose exec web python seed_words.py Использует Gemini API для генерации слов.
+### 5. Указать webhook
 
-Тестирование python -m pytest
+Добавьте в `.env`:
 
-В Docker: docker-compose exec web python -m pytest
+```env
+WEBHOOK_URL=https://xxxx.ngrok-free.app/webhook
+```
 
-Переменные окружения POSTGRES_DB=... POSTGRES_USER=... POSTGRES_PASSWORD=... DATABASE_URL=...
+Перезапустите проект:
 
-REDIS_HOST=redis REDIS_PORT=6379
+```bash
+docker-compose down
+docker-compose up
+```
+
+> ⚠️ **Важно:** URL меняется при каждом запуске — нужно обновлять `WEBHOOK_URL`. Используется только для разработки.
+
+> ❌ **Ошибка ERR_NGROK_4018** — не добавлен authtoken.
+> Решение: `ngrok config add-authtoken YOUR_TOKEN_HERE`
+
+---
+
+## Команды управления
+
+| Команда                     | Описание       |
+| --------------------------- | -------------- |
+| `docker-compose up --build` | Запуск         |
+| `docker-compose up -d`      | Фоновый запуск |
+| `docker-compose down`       | Остановка      |
+| `docker-compose logs -f`    | Логи           |
+| `docker-compose ps`         | Статус         |
+
+---
+
+## Заполнение базы данных
+
+```bash
+docker-compose exec web python seed_words.py
+```
+
+Использует **Gemini API** для генерации слов.
+
+---
+
+## Тестирование
+
+```bash
+python -m pytest
+```
+
+В Docker:
+
+```bash
+docker-compose exec web python -m pytest
+```
+
+---
+
+## Переменные окружения
+
+```env
+POSTGRES_DB=...
+POSTGRES_USER=...
+POSTGRES_PASSWORD=...
+DATABASE_URL=...
+
+REDIS_HOST=redis
+REDIS_PORT=6379
 
 BOT_TOKEN=...
 
-GROQ_API_KEY=... GEMINI_API_KEY=... WEBHOOK_URL=...
+GROQ_API_KEY=...
+GEMINI_API_KEY=...
+WEBHOOK_URL=...
+```
 
-📌 Итог Проект демонстрирует:
+---
 
-backend-разработку с несколькими сервисами работу с webhook вместо polling интеграцию с несколькими AI API использование очередей задач (Celery) работу с Redis и PostgreSQL контейнеризацию (Docker) тестирование
+## 📌 Итог
 
-👉 Основной фокус: автоматизация изучения английского с использованием AI и backend-инженерии
+Проект демонстрирует:
 
-Лицензия MIT License
+* backend-разработку с несколькими сервисами
+* работу с webhook вместо polling
+* интеграцию с несколькими AI API
+* использование очередей задач (Celery)
+* работу с Redis и PostgreSQL
+* контейнеризацию (Docker)
+* тестирование
+
+👉 Основной фокус: **автоматизация изучения английского с использованием AI и backend-инженерии**
+
+---
+
+## Лицензия
+
+MIT License
